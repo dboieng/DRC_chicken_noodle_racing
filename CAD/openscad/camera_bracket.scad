@@ -6,7 +6,7 @@
 // 100 = tilted further back
 // 120 = tilted much further back
 
-$fn = 64;
+$fn = 128;
 
 // ------------------------------------------------------------
 // Main adjustable parameters
@@ -17,22 +17,30 @@ mount_angle = 110;          // angle between base plate and camera plate
 material_thick = 2.0;
 
 // Base plate
-base_width  = 70;
-base_depth  = 40;
+base_width  = 55;
+base_depth  = 35;
 base_thick  = material_thick;
 
 // Camera plate
 camera_plate_width  = 34;  // IMX219-83 board is approx 85mm wide
-camera_plate_height = 34;  // IMX219-83 board is approx 24mm tall
+camera_plate_height = 32;  // IMX219-83 board is approx 24mm tall
 camera_plate_thick  = material_thick;
 
 // Camera PCB mounting holes
 // These are adjustable because you should check against your real board.
 camera_hole_dia = 2.6;     // M2.5 clearance
-camera_hole_x_spacing = 21;
+camera_hole_x_spacing = 21.0;
 camera_hole_z_spacing = 14;
 
-// Base mounting holes
+// Camera PCB mounting hole position adjustment
+camera_hole_z_offset = 4;   // positive moves holes up, negative moves down
+
+// Centre cable relief slot
+cable_slot_width  = 10;     // was 24
+cable_slot_height = 6;      // was 8
+cable_slot_z_offset = -12;   // negative moves slot down
+
+// Base plate mounting holes
 base_hole_dia = 3.1;       // M3 clearance
 base_hole_x_spacing = 45;
 base_hole_y_spacing = 25;
@@ -41,6 +49,7 @@ base_hole_y_spacing = 25;
 gusset_thick = material_thick;
 gusset_height = 32;
 gusset_depth = 32;
+
 
 // ------------------------------------------------------------
 // Helper modules
@@ -83,8 +92,8 @@ module camera_plate() {
             camera_plate_width / 2 + camera_hole_x_spacing / 2
         ]) {
             for (z = [
-                camera_plate_height / 2 - camera_hole_z_spacing / 2,
-                camera_plate_height / 2 + camera_hole_z_spacing / 2
+                camera_plate_height / 2 - camera_hole_z_spacing / 2 + camera_hole_z_offset,
+                camera_plate_height / 2 + camera_hole_z_spacing / 2 + camera_hole_z_offset
             ]) {
                 translate([x, -1, z])
                     rotate([-90, 0, 0])
@@ -92,13 +101,17 @@ module camera_plate() {
             }
         }
 
-        // Optional centre cable relief slot
+        // Centre cable relief slot
         translate([
-            camera_plate_width / 2 - 12,
+            camera_plate_width / 2 - cable_slot_width / 2,
             -1,
-            camera_plate_height / 2 - 4
+            camera_plate_height / 2 - cable_slot_height / 2 + cable_slot_z_offset
         ])
-            cube([24, camera_plate_thick + 2, 8], center = false);
+            cube([
+                cable_slot_width,
+                camera_plate_thick + 2,
+                cable_slot_height
+            ], center = false);
     }
 }
 
@@ -188,7 +201,7 @@ module camera_bracket() {
                 camera_plate();
 
         // Left and right side support gussets
-        side_gusset_x_position = 18;
+        side_gusset_x_position = 10.5;
         side_gusset(side_gusset_x_position);
         side_gusset(base_width - side_gusset_x_position - gusset_thick);
     }
